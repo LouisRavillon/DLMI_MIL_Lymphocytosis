@@ -19,6 +19,14 @@ class MILDataModule(pl.LightningDataModule):
             sampler=self.train_sampler
         )
 
+    def val_dataloader(self):
+        return DataLoader(
+            self.validation_dataset_reference,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=False,
+        )
+
     def test_dataloader(self):
         return DataLoader(
             self.inference_dataset_reference,
@@ -44,7 +52,7 @@ class DataModule(MILDataModule):
         df['tiles'] = df.progress_apply(self.get_tiles, axis=1, phase=phase)
         return df.explode('tiles')
 
-    def setup(self, stage: Optional[str] = None):
+    def setup(self):
         
         tqdm.pandas()
         
