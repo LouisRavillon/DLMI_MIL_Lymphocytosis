@@ -24,7 +24,7 @@ def run_training(clf, trainer, data_module):
 if __name__ == '__main__':
     seed_everything(31)
 
-    data_module = LymphoDataModule(
+    data_module = DataModule(
         data_dir='data/3md3070-dlmi/',
         batch_size=16, 
         num_workers=0)
