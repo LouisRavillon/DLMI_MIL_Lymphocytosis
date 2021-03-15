@@ -11,26 +11,14 @@ from typing import Callable, Union
 def read_image(image_fp: str) -> Image:
     return Image.open(image_fp)
 
-
-def read_region(image: torch.Tensor, coord: tuple, tile_size: Union[int, tuple]):
-    if isinstance(tile_size, int):
-        t_x, t_y = tile_size, tile_size
-    elif isinstance(tile_size, tuple):
-        t_x, t_y = tile_size
-    y, x = coord
-    return image[..., y: y + t_y, x: x + t_x]
-
-
 class MILImageDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         dataset: pd.DataFrame,
-        tile_size: Union[int, tuple],
         training: bool = True,
         transform: Callable = None
     ):
         self.dataset = dataset
-        self.tile_size = tile_size
         self.training = training
         self.transform = transform
 
