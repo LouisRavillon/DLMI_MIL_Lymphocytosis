@@ -8,7 +8,6 @@ from tqdm import tqdm
 from typing import Optional
 
 from data.dataset import MILImageDataset
-from data.utils import tile_dataframe
 
 
 class MILDataModule(pl.LightningDataModule):
