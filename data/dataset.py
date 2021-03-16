@@ -25,17 +25,18 @@ class MILImageDataset(torch.utils.data.Dataset):
     @lru_cache(maxsize=4096)
     def __getitem__(self, index: int):
         row = self.dataset.loc[index]
-        image_fp, coord = row.image_fp, row.coord
+        image_fp = row.tiles
         image = read_image(image_fp)
         if self.transform:
             image = self.transform(image)
         else:
             image = transforms.functional.to_tensor(image)
-        image = read_region(image, coord, self.tile_size)
         if self.training:
             return index, image, np.array([row.label]).astype(float)
         else:
             return index, image, np.array([-1.0])  # -1 for missing label
+            # test dataframe should already be filled with -1, but let's keep this 
+            # which will work regardless of what the test's label column is filled with
 
     def __len__(self):
         return len(self.dataset)
