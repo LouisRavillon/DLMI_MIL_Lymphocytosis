@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from typing import Optional
 
+from sklearn.model_selection import train_test_split
+
 from data.dataset import MILImageDataset
 
 
