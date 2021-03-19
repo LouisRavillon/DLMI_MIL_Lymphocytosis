@@ -151,6 +151,7 @@ class MILModel(LightningModule):
         )
         
     def get_metrics(self, probs, preds, labels):
+        labels = labels.long()
         acc = accuracy(preds, labels)
         balanced_acc = balanced_accuracy_score(labels.numpy(), preds.numpy())        
         auc = auroc(probs, labels)

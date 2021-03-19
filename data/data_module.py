@@ -70,6 +70,8 @@ class DataModule(MILDataModule):
             train_df, val_df = train_test_split(train_df, test_size=0.5)
             train_df = self.tile_dataframe(train_df, phase='train')
             val_df = self.tile_dataframe(val_df, phase='train')
+            train_df = train_df[train_df['tiles'].notna()]
+            val_df = val_df[val_df['tiles'].notna()]
             train_df.to_csv(Path(self.data_dir, f'train.csv'), index=False)
             val_df.to_csv(Path(self.data_dir, f'val.csv'), index=False)
 
@@ -80,6 +82,7 @@ class DataModule(MILDataModule):
         else:
             test_df = pd.read_csv(Path(self.data_dir, 'test', 'test_data.csv'))
             test_df = self.tile_dataframe(test_df, phase='test')
+            test_df = test_df[test_df['tiles'].notna()]
             test_df.to_csv(Path(self.data_dir, f'test.csv'), index=False)
 
         train_df = train_df.reset_index()
