@@ -6,11 +6,21 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from typing import Optional
+from datetime import date
 
 from sklearn.model_selection import train_test_split
 
 from data.dataset import MILImageDataset
 
+def get_age(born): 
+    today = date.today().year 
+    return today - born
+
+def convert_dob_age(df):
+    df['year'] = pd.DatetimeIndex(df['dob']).year
+    df['age'] = df['year'].apply(get_age)
+    df = df.drop(['dob','year'],axis=1)
+    return df
 
 class MILDataModule(pl.LightningDataModule):
     def train_dataloader(self):
@@ -70,8 +80,13 @@ class DataModule(MILDataModule):
             train_df, val_df = train_test_split(train_df, test_size=0.5)
             train_df = self.tile_dataframe(train_df, phase='train')
             val_df = self.tile_dataframe(val_df, phase='train')
+
             train_df = train_df[train_df['tiles'].notna()]
             val_df = val_df[val_df['tiles'].notna()]
+
+            train_df = convert_dob_age(train_df)
+            val_df = convert_dob_age(val_df)
+            
             train_df.to_csv(Path(self.data_dir, f'train.csv'), index=False)
             val_df.to_csv(Path(self.data_dir, f'val.csv'), index=False)
 
@@ -83,6 +98,7 @@ class DataModule(MILDataModule):
             test_df = pd.read_csv(Path(self.data_dir, 'test', 'test_data.csv'))
             test_df = self.tile_dataframe(test_df, phase='test')
             test_df = test_df[test_df['tiles'].notna()]
+            test_df = convert_dob_age(test_df)
             test_df.to_csv(Path(self.data_dir, f'test.csv'), index=False)
 
         train_df = train_df.reset_index()

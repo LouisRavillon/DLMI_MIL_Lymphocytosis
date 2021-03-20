@@ -14,24 +14,10 @@ pretrained_settings = {
             'std': [0.229, 0.224, 0.225],
             'num_classes': 1000
         }
-    },
-    'se_resnext50_32x4d': {
-        'imagenet': {
-            'url': 'http://data.lip6.fr/cadene/pretrainedmodels/se_resnext50_32x4d-a260b3a4.pth',
-            'input_space': 'RGB',
-            'input_size': [3, 224, 224],
-            'input_range': [0, 1],
-            'mean': [0.485, 0.456, 0.406],
-            'std': [0.229, 0.224, 0.225],
-            'num_classes': 1000
-        }
-    },
+    }
 }
 
 class Bottleneck(nn.Module):
-    """
-    Base class for bottlenecks that implements `forward()` method.
-    """
     def forward(self, x):
         residual = x
 
@@ -78,11 +64,7 @@ class SEModule(nn.Module):
 
 
 class SEResNetBottleneck(Bottleneck):
-    """
-    ResNet bottleneck with a Squeeze-and-Excitation module. It follows Caffe
-    implementation and uses `stride=stride` in `conv1` and not in `conv2`
-    (the latter is used in the torchvision implementation of ResNet).
-    """
+
     expansion = 4
 
     def __init__(self, inplanes, planes, groups, reduction, stride=1,
@@ -95,30 +77,6 @@ class SEResNetBottleneck(Bottleneck):
                                groups=groups, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(planes * 4)
-        self.relu = nn.ReLU(inplace=True)
-        self.se_module = SEModule(planes * 4, reduction=reduction)
-        self.downsample = downsample
-        self.stride = stride
-
-
-class SEResNeXtBottleneck(Bottleneck):
-    """
-    ResNeXt bottleneck type C with a Squeeze-and-Excitation module.
-    """
-    expansion = 4
-
-    def __init__(self, inplanes, planes, groups, reduction, stride=1,
-                 downsample=None, base_width=4):
-        super(SEResNeXtBottleneck, self).__init__()
-        width = math.floor(planes * (base_width / 64)) * groups
-        self.conv1 = nn.Conv2d(inplanes, width, kernel_size=1, bias=False,
-                               stride=1)
-        self.bn1 = nn.BatchNorm2d(width)
-        self.conv2 = nn.Conv2d(width, width, kernel_size=3, stride=stride,
-                               padding=1, groups=groups, bias=False)
-        self.bn2 = nn.BatchNorm2d(width)
-        self.conv3 = nn.Conv2d(width, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
         self.relu = nn.ReLU(inplace=True)
         self.se_module = SEModule(planes * 4, reduction=reduction)
@@ -225,6 +183,9 @@ class SENet(nn.Module):
         self.dropout = nn.Dropout(dropout_p) if dropout_p is not None else None
         self.last_linear = nn.Linear(512 * block.expansion, num_classes)
 
+        self.mlp_in = nn.Linear(2,100)
+        self.mlp_out = nn.Linear(100,1)
+
     def _make_layer(self, block, planes, blocks, groups, reduction, stride=1,
                     downsample_kernel_size=1, downsample_padding=0):
         downsample = None
@@ -285,16 +246,5 @@ def se_resnet50(num_classes=1000, pretrained='imagenet'):
                   num_classes=num_classes)
     if pretrained is not None:
         settings = pretrained_settings['se_resnet50'][pretrained]
-        initialize_pretrained_model(model, num_classes, settings)
-    return model
-
-
-def se_resnext50_32x4d(num_classes=1000, pretrained='imagenet'):
-    model = SENet(SEResNeXtBottleneck, [3, 4, 6, 3], groups=32, reduction=16,
-                  dropout_p=None, inplanes=64, input_3x3=False,
-                  downsample_kernel_size=1, downsample_padding=0,
-                  num_classes=num_classes)
-    if pretrained is not None:
-        settings = pretrained_settings['se_resnext50_32x4d'][pretrained]
         initialize_pretrained_model(model, num_classes, settings)
     return model

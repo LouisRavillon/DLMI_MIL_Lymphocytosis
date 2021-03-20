@@ -5,6 +5,7 @@ from PIL import Image
 import torch
 from torchvision import transforms
 from typing import Callable, Union
+import torch
 
 
 @lru_cache(maxsize=256)
@@ -27,14 +28,17 @@ class MILImageDataset(torch.utils.data.Dataset):
         row = self.dataset.loc[index]
         image_fp = row.tiles
         image = read_image(image_fp)
+        age = row.age
+        concentration = row.concentration
         if self.transform:
             image = self.transform(image)
         else:
             image = transforms.functional.to_tensor(image)
         if self.training:
-            return index, image, np.array([row.label]).astype(float)
+            return index, image, np.array([row.label]).astype(float), torch.FloatTensor([age, concentration])
         else:
-            return index, image, np.array([-1.0])  # -1 for missing label
+            return index, image, np.array([-1.0]), age, concentration, torch.FloatTensor([age, concentration])
+              # -1 for missing label
             # test dataframe should already be filled with -1, but let's keep this 
             # which will work regardless of what the test's label column is filled with
 
