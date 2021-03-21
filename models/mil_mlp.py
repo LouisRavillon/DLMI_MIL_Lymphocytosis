@@ -23,8 +23,8 @@ class MILModel(LightningModule):
         self.output_dir = output_dir
         self.compute_test_metrics = True
 
-    def forward(self, image):
-        return self.model(image)
+    def forward(self, image, attr):
+        return self.model(image, attr)
 
     def training_step(self, batch, batch_idx):
         index, image, label, attr = batch
@@ -32,11 +32,7 @@ class MILModel(LightningModule):
             self.logger.experiment.add_images(
                 'Top-K Images', image, global_step=self.training_log_step
             )
-        output = torch.sigmoid(self(image))
-
-        output_mlp = self.model.mlp_out(F.relu(self.model.mlp_in(attr)))
-
-        output = (output_mlp + output) /2
+        output = torch.sigmoid(self(image, attr))
 
         loss = self.loss(output, label.float())
         self.logger.log_metrics({'Training/Step Loss': loss}, step=self.training_log_step)
@@ -66,11 +62,7 @@ class MILModel(LightningModule):
 
     def validation_step(self, batch, batch_idx):
         index, image, label, attr = batch
-        output = torch.sigmoid(self(image))
-
-        output_mlp = self.model.mlp_out(F.relu(self.model.mlp_in(attr)))
-
-        output = (output_mlp + output) /2
+        output = torch.sigmoid(self(image, attr))
 
         loss = self.loss(output, label.float())
         self.logger.log_metrics({'Validation/Step Loss': loss}, step=self.validation_log_step)
@@ -105,11 +97,8 @@ class MILModel(LightningModule):
     
     def test_step(self, batch, batch_idx):
         index, image, label, attr = batch
-        output = torch.sigmoid(self(image))
-        
-        output_mlp = self.model.mlp_out(F.relu(self.model.mlp_in(attr)))
+        output = torch.sigmoid(self(image, attr))
 
-        output = (output_mlp + output) /2
         loss = self.loss(output, label.float())
         self.logger.log_metrics({'Testing/Step Loss': loss}, step=self.testing_log_step)
         self.testing_log_step += 1
