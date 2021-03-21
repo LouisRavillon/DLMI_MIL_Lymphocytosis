@@ -183,9 +183,6 @@ class SENet(nn.Module):
         self.dropout = nn.Dropout(dropout_p) if dropout_p is not None else None
         self.last_linear = nn.Linear(512 * block.expansion, num_classes)
 
-        self.mlp_in = nn.Linear(2,100)
-        self.mlp_out = nn.Linear(100,1)
-
     def _make_layer(self, block, planes, blocks, groups, reduction, stride=1,
                     downsample_kernel_size=1, downsample_padding=0):
         downsample = None
