@@ -29,7 +29,7 @@ class MILImageDataset(torch.utils.data.Dataset):
         image_fp = row.tiles
         image = read_image(image_fp)
         age = row.age
-        concentration = row.concentration
+        concentration = row.lymph_count
         if self.transform:
             image = self.transform(image)
         else:
@@ -37,10 +37,7 @@ class MILImageDataset(torch.utils.data.Dataset):
         if self.training:
             return index, image, np.array([row.label]).astype(float), torch.FloatTensor([age, concentration])
         else:
-            return index, image, np.array([-1.0]), age, concentration, torch.FloatTensor([age, concentration])
-              # -1 for missing label
-            # test dataframe should already be filled with -1, but let's keep this 
-            # which will work regardless of what the test's label column is filled with
+            return index, image, np.array([-1.0]), torch.FloatTensor([age, concentration])
 
     def __len__(self):
         return len(self.dataset)
