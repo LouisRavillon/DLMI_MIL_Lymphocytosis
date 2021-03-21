@@ -76,10 +76,13 @@ class DataModule(MILDataModule):
             val_df = pd.read_csv(Path(self.data_dir, 'val.csv'))
             print(f'...done.')
         else:
-            train_df = pd.read_csv(Path(self.data_dir, 'train', 'train_data.csv'))
+            train_df = pd.read_csv(Path(self.data_dir, 'trainset', 'trainset_true.csv'))
+            train_df.columns= train_df.columns.str.lower()
+
             train_df, val_df = train_test_split(train_df, test_size=0.5)
-            train_df = self.tile_dataframe(train_df, phase='train')
-            val_df = self.tile_dataframe(val_df, phase='train')
+            train_df = self.tile_dataframe(train_df, phase='trainset')
+
+            val_df = self.tile_dataframe(val_df, phase='trainset')
 
             train_df = train_df[train_df['tiles'].notna()]
             val_df = val_df[val_df['tiles'].notna()]
@@ -95,8 +98,10 @@ class DataModule(MILDataModule):
             test_df = pd.read_csv(Path(self.data_dir, f'test.csv'))
             print(f'...done.')
         else:
-            test_df = pd.read_csv(Path(self.data_dir, 'test', 'test_data.csv'))
-            test_df = self.tile_dataframe(test_df, phase='test')
+            test_df = pd.read_csv(Path(self.data_dir, 'testset', 'testset_data.csv'))
+            test_df.columns= test_df.columns.str.strip().str.lower()
+            
+            test_df = self.tile_dataframe(test_df, phase='testset')
             test_df = test_df[test_df['tiles'].notna()]
             test_df = convert_dob_age(test_df)
             test_df.to_csv(Path(self.data_dir, f'test.csv'), index=False)

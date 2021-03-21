@@ -26,7 +26,7 @@ class MILModel(LightningModule):
         return self.model(image)
 
     def training_step(self, batch, batch_idx):
-        index, image, label = batch
+        index, image, label, attr = batch
         if batch_idx == 0:
             self.logger.experiment.add_images(
                 'Top-K Images', image, global_step=self.training_log_step
@@ -59,7 +59,7 @@ class MILModel(LightningModule):
         self.training_metrics = {'acc': acc, 'balanced_acc': balanced_acc, 'auc': auc, 'precision': precision, 'recall': recall}
 
     def validation_step(self, batch, batch_idx):
-        index, image, label = batch
+        index, image, label, attr = batch
         output = torch.sigmoid(self(image))
         loss = self.loss(output, label.float())
         self.logger.log_metrics({'Validation/Step Loss': loss}, step=self.validation_log_step)
@@ -93,7 +93,7 @@ class MILModel(LightningModule):
         self.validation_metrics = {'acc': acc, 'balanced_acc': balanced_acc, 'auc': auc, 'precision': precision, 'recall': recall}
     
     def test_step(self, batch, batch_idx):
-        index, image, label = batch
+        index, image, label, attr = batch
         output = torch.sigmoid(self(image))
         loss = self.loss(output, label.float())
         self.logger.log_metrics({'Testing/Step Loss': loss}, step=self.testing_log_step)
